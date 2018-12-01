@@ -28,6 +28,8 @@ def create_settings():
                              'its':     1,
                              'param':   1}
 
+    settings['imputation'] = {}
+
     settings['prediction'] = {'type':   'MI',
                               'its':    0.1,
                               'param':  0.95}
