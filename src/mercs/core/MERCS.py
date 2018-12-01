@@ -1,6 +1,6 @@
 import json
 
-from sklearn import impute.SimpleImputer
+from sklearn.impute import SimpleImputer
 from timeit import default_timer
 
 from ..algo.induction import base_ind_algo
@@ -365,7 +365,7 @@ class MERCS(object):
 
         This to fill in missing values later on.
         """
-        imputator = SimpleImputer(missing_values='NaN',
+        imputator = SimpleImputer(missing_values=np.nan,
                             strategy='most_frequent')
         imputator.fit(X)
 
