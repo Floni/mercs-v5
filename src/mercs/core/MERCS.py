@@ -105,7 +105,7 @@ class MERCS(object):
         debug_print(msg,V=VERBOSITY)
 
         self.update_settings(mode='fit', **kwargs)
-        self.fit_imputator(X, self.s['imputation']['strategy'])
+        self.fit_imputator(X)
 
         # 2. Selection = Prepare Induction
         self.m_codes = self.perform_selection(self.s['metadata'])
@@ -320,11 +320,6 @@ class MERCS(object):
                                                                 prefix='sel',
                                                                 delimiter=delimiter,
                                                                 **kwargs)
-        elif mode in {'imputation', 'imp'}:
-            self.s['imputation'] = filter_kwargs_update_settings(self.s['imputation'],
-                                                                prefix='imp',
-                                                                delimiter=delimiter,
-                                                                **kwargs)
         elif mode in {'prediction','pred'}:
             self.s['prediction'] = filter_kwargs_update_settings(self.s['prediction'],
                                                                  prefix='pred',
@@ -349,7 +344,6 @@ class MERCS(object):
         elif mode in {'fit'}:
             self.update_settings(mode='induction', delimiter=delimiter, **kwargs)
             self.update_settings(mode='selection', delimiter=delimiter, **kwargs)
-            self.update_settings(mode='imputation', delimiter=delimiter, **kwargs)
         elif mode in {'predict','batch_predict'}:
             self.update_settings(mode='prediction', delimiter=delimiter, **kwargs)
             self.update_settings(mode='queries', delimiter=delimiter, **kwargs)
@@ -365,16 +359,14 @@ class MERCS(object):
 
         return
 
-    def fit_imputator(self, X, imputation_strategy):
+    def fit_imputator(self, X):
         """
         Construct and fit an imputator based on input data_csv.
 
         This to fill in missing values later on.
-
-        :param imputation_strategy:     Imputation method to use
         """
         imputator = SimpleImputer(missing_values=np.nan,
-                            strategy=imputation_strategy)
+                            strategy='most_frequent')
         imputator.fit(X)
 
         self.imputator = imputator
