@@ -13,6 +13,8 @@ license:
     Apache License, Version 2.0, see LICENSE for details.
 """
 
+from weka.classifiers import Classifier
+
 from sklearn.tree import *
 from sklearn.ensemble import *
 
@@ -84,38 +86,42 @@ def induce_model(settings, is_nominal, m_targ):
     -------
 
     """
+    
+    return Classifier(classname="weka.classifiers.trees.J48", options=["-C", "0.3"])
 
-    if only_nominal_targ(is_nominal, m_targ):
-        model = induce_clf(settings)
-    elif only_numeric_targ(is_nominal, m_targ):
-        model = induce_rgr(settings)
-    else:
-        msg = "Model with mixed targets {}".format(m_targ)
-        raise TypeError(msg)
+    # if only_nominal_targ(is_nominal, m_targ):
+    #     model = induce_clf(settings)
+    # elif only_numeric_targ(is_nominal, m_targ):
+    #     model = induce_rgr(settings)
+    # else:
+    #     msg = "Model with mixed targets {}".format(m_targ)
+    #     raise TypeError(msg)
 
-    return model
+    # return model
 
 
 def induce_clf(s):
     """
     Induce a single classifier.
-
+""
     Filters the parameters
     Initializes the actual model
     """
+    
+    return Classifier(classname="weka.classifiers.trees.J48", options=["-C", "0.3"])
 
-    mod_type = s['type']
-    params = {k:v for k,v in s.items() if not k in {'type', 'flatten'}}
+    # mod_type = s['type']
+    # params = {k:v for k,v in s.items() if not k in {'type', 'flatten'}}
 
-    if mod_type in kw_ind_trees():
-        clf = DecisionTreeClassifier(**params)
-    elif mod_type in kw_ind_forests():
-        clf = RandomForestClassifier(**params)
-    else:
-        msg = "Did nog recognize classifier type: {}".format(mod_type)
-        raise TypeError(msg)
+    # if mod_type in kw_ind_trees():
+    #     clf = DecisionTreeClassifier(**params)
+    # elif mod_type in kw_ind_forests():
+    #     clf = RandomForestClassifier(**params)
+    # else:
+    #     msg = "Did nog recognize classifier type: {}".format(mod_type)
+    #     raise TypeError(msg)
 
-    return clf
+    # return clf
 
 
 def induce_rgr(s):
