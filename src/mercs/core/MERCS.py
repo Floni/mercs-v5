@@ -1,5 +1,10 @@
 import json
 
+import weka.core.jvm as jvm
+import weka.core.converters as converters
+import weka.core.dataset as dataset
+from weka.filters import Filter
+
 from sklearn.impute import SimpleImputer
 from timeit import default_timer
 
@@ -45,6 +50,8 @@ class MERCS(object):
         settings_fname: string
             Filename of .json file containing the settings
         """
+
+        jvm.start()
 
         if settings_fname is None:
             self.s = create_settings()
@@ -117,8 +124,8 @@ class MERCS(object):
                                                            self.s['metadata'])
         # 4. Post processing
         tock = default_timer()
-        self.update_settings(mode='metadata')   # Save info on learned models
-        self.update_settings(mode='model_data', mod_ind_time=tock-tick)
+        #self.update_settings(mode='metadata')   # Save info on learned models
+        #self.update_settings(mode='model_data', mod_ind_time=tock-tick)
 
         return
 
@@ -472,6 +479,18 @@ class MERCS(object):
             X = X_Y[:, :len(m_desc[m_idx])]
             Y = X_Y[:, len(m_desc[m_idx]):]
 
+            # Build instances dataset for Weka
+            build_data = dataset.create_instances_from_matrices(X, Y)
+
+            # Create and use a filter to convert the standard numeric attributes to nominal attributes
+            filter = Filter(classname="weka.filters.unsupervised.attribute.NumericToNominal")
+            filter.inputformat(build_data)
+            filtered = filter.filter(build_data)
+
+            # TODO: This should be able to be multi-output
+            # Set prediction/output attribute index of the dataset
+            filtered.class_index = m_targ[m_idx][0]
+
             msg="""
             X.shape: {}\n
             Y.shape: {}\n
@@ -484,7 +503,8 @@ class MERCS(object):
             if 1 in list(X.shape): X = X.ravel()
             if 1 in list(Y.shape): Y = Y.ravel()
 
-            m_list[m_idx].fit(X, Y)
+            # TODO: Change to weka classifier build (takes only 1 data param)
+            m_list[m_idx].build_classifier(filtered)
             del X, Y, X_Y
 
         flatten = self.s['induction'].get('flatten', False)
