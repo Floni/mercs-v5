@@ -114,6 +114,13 @@ class MERCS(object):
         self.update_settings(mode='fit', **kwargs)
         self.fit_imputator(X, self.s['imputation']['strategy'])
 
+        # Save all attribute classes, needed later for weka classifier
+        classes = []
+        for c in X:
+            classes.append([str(l) for l in X[c].unique()])
+        
+        self.labels = classes
+
         # 2. Selection = Prepare Induction
         self.m_codes = self.perform_selection(self.s['metadata'])
 
@@ -124,8 +131,8 @@ class MERCS(object):
                                                            self.s['metadata'])
         # 4. Post processing
         tock = default_timer()
-        #self.update_settings(mode='metadata')   # Save info on learned models
-        #self.update_settings(mode='model_data', mod_ind_time=tock-tick)
+        self.update_settings(mode='metadata')   # Save info on learned models
+        self.update_settings(mode='model_data', mod_ind_time=tock-tick)
 
         return
 
@@ -347,7 +354,8 @@ class MERCS(object):
         elif mode in {'metadata','md'}:
             self.s['metadata'] = update_meta_data(self.s['metadata'],
                                                   self.m_list,
-                                                  self.m_codes)
+                                                  self.m_codes,
+                                                  self.labels)
         elif mode in {'model_data'}:
             self.s['model_data'] = filter_kwargs_update_settings(self.s['model_data'],
                                                                  prefix='mod',
@@ -487,7 +495,7 @@ class MERCS(object):
             filter.inputformat(build_data)
             filtered = filter.filter(build_data)
 
-            # TODO: This should be able to be multi-output
+            # TODO: This should be able to be multi-output but does not seem possible in MERCS
             # Set prediction/output attribute index of the dataset
             filtered.class_index = m_targ[m_idx][0]
 
@@ -503,8 +511,8 @@ class MERCS(object):
             if 1 in list(X.shape): X = X.ravel()
             if 1 in list(Y.shape): Y = Y.ravel()
 
-            # TODO: Change to weka classifier build (takes only 1 data param)
             m_list[m_idx].build_classifier(filtered)
+            
             del X, Y, X_Y
 
         flatten = self.s['induction'].get('flatten', False)
@@ -555,8 +563,8 @@ class MERCS(object):
 
         # Prelims
         new_settings = {**settings,
-                        'clf_labels':   metadata['clf_labels'],
-                        'FI':           metadata['FI']} # TODO(elia): This is crap!
+                        'clf_labels':   metadata['clf_labels']}
+                        #'FI':           metadata['FI']} # TODO(elia): This is crap!
 
         # Actual work
         if new_settings['type'] == 'MI':

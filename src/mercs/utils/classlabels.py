@@ -7,7 +7,7 @@ from .debug import debug_print
 VERBOSITY = 0
 
 
-def collect_and_verify_clf_classlabels(m_list, m_codes):
+def collect_and_verify_clf_classlabels(m_list, m_codes, labels):
     """
     Collect all the classlabels
 
@@ -30,7 +30,7 @@ def collect_and_verify_clf_classlabels(m_list, m_codes):
 
     for m_idx, m in enumerate(m_list):
         # Collect the classlabels of one model
-        m_classlabels = collect_classlabels(m)
+        m_classlabels = [np.array(m_targ[m_idx])]
 
         # Verify all the classlabels
         clf_labels = update_clf_labels(clf_labels, m_classlabels, m_targ[m_idx])
@@ -70,22 +70,25 @@ def collect_classlabels(m):
 
     """
 
-    if not hasattr(m, 'classes_'):
-        # If no classlabels are present, assume a fully numerical model
-        m_classlabels = initialize_classlabels(m.n_outputs_, mode='numeric')
-    elif m.classes_ is None:
-        # If no classlabels are present, assume a fully numerical model
-        m_classlabels = initialize_classlabels(m.n_outputs_, mode='numeric')
-    elif isinstance(m.classes_, np.ndarray):
-        # Single-target sklearn output; wrap in array
-        m_classlabels = [m.classes_]
-    elif isinstance(m.classes_, list):
-        m_classlabels = m.classes_
-    else:
-        msg = "Did not recognize the classlabels: {} of this model: {}".format(m.classes_, m)
-        raise TypeError(msg)
+    # if not hasattr(m, 'classes_'):
+    #     # If no classlabels are present, assume a fully numerical model
+    #     m_classlabels = initialize_classlabels(m.n_outputs_, mode='numeric')
+    # elif m.classes_ is None:
+    #     # If no classlabels are present, assume a fully numerical model
+    #     m_classlabels = initialize_classlabels(m.n_outputs_, mode='numeric')
+    # elif isinstance(m.classes_, np.ndarray):
+    #     # Single-target sklearn output; wrap in array
+    #     m_classlabels = [m.classes_]
+    # elif isinstance(m.classes_, list):
+    #     m_classlabels = m.classes_
+    # else:
+    #     msg = "Did not recognize the classlabels: {} of this model: {}".format(m.classes_, m)
+    #     raise TypeError(msg)
 
-    return m_classlabels
+    # return m_classlabels
+
+    # Weka J48 is single output
+    return
 
 
 def update_clf_labels(clf_labels, m_classlabels, m_targ):

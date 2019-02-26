@@ -49,7 +49,7 @@ def filter_kwargs_update_settings(s, prefix=None, delimiter='_', **kwargs):
     return _update_settings_dict(s, param_map, **kwargs)
 
 
-def update_meta_data(s, m_list, m_codes):
+def update_meta_data(s, m_list, m_codes, labels):
     """
     Update the metadata of this MERCS object.
 
@@ -72,8 +72,9 @@ def update_meta_data(s, m_list, m_codes):
     """
     # TODO(elia): This is not data about the data (=metadata) but data about component models
 
-    s['clf_labels'] = collect_and_verify_clf_classlabels(m_list, m_codes)
-    s['FI'] = collect_feature_importances(m_list, m_codes)
+    s['clf_labels'] = labels
+    #collect_and_verify_clf_classlabels(m_list, m_codes, labels)
+    #s['FI'] = collect_feature_importances(m_list, m_codes)
 
     return s
 

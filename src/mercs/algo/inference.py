@@ -189,7 +189,7 @@ def predict_values_from_proba(proba_res, lab_res):
 
     assert nb_attribs == len(lab_res)
     for i in range(nb_attribs):
-        my_result = lab_res[i].take(np.argmax(proba_res[i], axis=1), axis=0)
+        my_result = np.asarray(list(map(int, lab_res[i]))).take(np.argmax(proba_res[i], axis=1), axis=0)
         np.rint(my_result)
         predictions[:, i] = my_result
 

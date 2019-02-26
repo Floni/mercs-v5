@@ -7,6 +7,7 @@ from ..utils.classlabels import collect_classlabels
 from ..utils.debug import debug_print
 VERBOSITY = 0
 
+import weka.core.dataset as dataset
 
 # Classes
 class PolyModel(object):
@@ -78,9 +79,9 @@ class PolyModel(object):
 
         # TODO(elia): This needs to be done better. ALL the classes count! (also numeric ones)
         self.classes_ = [v for i, v in enumerate(self.targ_lab)
-                         if self.is_targ_nominal[i]]
+                          if self.is_targ_nominal[i]]
         assert np.sum(self.is_targ_nominal) == len(self.classes_)
-        # self.classes_ = self.targ_lab
+        self.classes_ = self.targ_lab
 
         # Active models (nominal/numeric)
         self.mod_idx_nominal = [i for i, v in enumerate(self.m_targ)
@@ -234,7 +235,7 @@ class EnsembleModel(PolyModel):
             mod_targ_nominal = [self.is_attr_nominal[v] for v in mod_targ]
             mod_targ = [v for i, v in enumerate(mod_targ) if mod_targ_nominal[i]]
 
-            mod_labs = collect_classlabels(mod)  # Collect labels of this model
+            mod_labs = res_labs  # Collect labels of this model
 
             contents = (mod_labs,
                         mod_targ_nominal,
@@ -254,7 +255,14 @@ class EnsembleModel(PolyModel):
 
             mod_labs = [v for i, v in enumerate(mod_labs) if mod_targ_nominal[i]]
 
-            mod_prob = mod.predict_proba(X[:, mod_desc])  # Individual prediction
+            pred_data = dataset.create_instances_from_matrices(X[:, mod_desc])
+
+            # TODO: set class attribute categories/values -> replace "?"
+            pred_data.insert_attribute(dataset.Attribute.create_nominal("class", self.targ_lab[0]), pred_data.num_attributes)
+            pred_data.class_index = mod_targ[0]
+
+            # Individual prediction
+            mod_prob = mod.distributions_for_instances(pred_data)
 
             shared_targets = set(mod_targ) & set(res_atts)
 
