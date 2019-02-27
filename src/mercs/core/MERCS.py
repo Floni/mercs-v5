@@ -114,13 +114,6 @@ class MERCS(object):
         self.update_settings(mode='fit', **kwargs)
         self.fit_imputator(X, self.s['imputation']['strategy'])
 
-        # Save all attribute classes, needed later for weka classifier
-        classes = []
-        for c in X:
-            classes.append([str(l) for l in X[c].unique()])
-        
-        self.labels = classes
-
         # 2. Selection = Prepare Induction
         self.m_codes = self.perform_selection(self.s['metadata'])
 
@@ -494,10 +487,14 @@ class MERCS(object):
             filter = Filter(classname="weka.filters.unsupervised.attribute.NumericToNominal")
             filter.inputformat(build_data)
             filtered = filter.filter(build_data)
+            
 
             # TODO: This should be able to be multi-output but does not seem possible in MERCS
             # Set prediction/output attribute index of the dataset
             filtered.class_index = m_targ[m_idx][0]
+
+            # Save all attribute classes, needed later for weka classifier       
+            self.labels = [a.values for a in filtered.attributes()]
 
             msg="""
             X.shape: {}\n

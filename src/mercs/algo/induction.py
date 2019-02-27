@@ -87,7 +87,7 @@ def induce_model(settings, is_nominal, m_targ):
 
     """
     
-    return Classifier(classname="weka.classifiers.trees.J48", options=["-C", "0.3"])
+    return Classifier(classname="weka.classifiers.trees.J48", options=["-U"])
 
     # if only_nominal_targ(is_nominal, m_targ):
     #     model = induce_clf(settings)
@@ -108,7 +108,7 @@ def induce_clf(s):
     Initializes the actual model
     """
     
-    return Classifier(classname="weka.classifiers.trees.J48", options=["-C", "0.3"])
+    return Classifier(classname="weka.classifiers.trees.J48", options=["-U"])
 
     # mod_type = s['type']
     # params = {k:v for k,v in s.items() if not k in {'type', 'flatten'}}
