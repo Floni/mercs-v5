@@ -8,6 +8,7 @@ from ..utils.debug import debug_print
 VERBOSITY = 0
 
 import weka.core.dataset as dataset
+from weka.filters import Filter
 
 # Classes
 class PolyModel(object):
@@ -255,11 +256,18 @@ class EnsembleModel(PolyModel):
 
             mod_labs = [v for i, v in enumerate(mod_labs) if mod_targ_nominal[i]]
 
+
+            # TODO: the attributes of the data are marked as numeric instead of categorical -> bad result
             pred_data = dataset.create_instances_from_matrices(X[:, mod_desc])
 
-            # TODO: set class attribute categories/values -> replace "?"
-            pred_data.insert_attribute(dataset.Attribute.create_nominal("class", self.targ_lab[0]), pred_data.num_attributes)
-            pred_data.class_index = mod_targ[0]
+            # Convert numerical attributes of the data to nominal
+            filter = Filter(classname="weka.filters.unsupervised.attribute.NumericToNominal")
+            filter.inputformat(pred_data)
+            pred_data = filter.filter(pred_data)
+
+            new_idx = pred_data.num_attributes
+            pred_data.insert_attribute(dataset.Attribute.create_nominal("class", self.targ_lab[0]), new_idx)
+            pred_data.class_index = new_idx
 
             # Individual prediction
             mod_prob = mod.distributions_for_instances(pred_data)
