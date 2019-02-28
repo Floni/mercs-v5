@@ -87,7 +87,7 @@ def induce_model(settings, is_nominal, m_targ):
 
     """
     
-    return Classifier(classname="weka.classifiers.trees.J48", options=["-U"])
+    return induce_clf(settings)
 
     # if only_nominal_targ(is_nominal, m_targ):
     #     model = induce_clf(settings)
@@ -108,20 +108,16 @@ def induce_clf(s):
     Initializes the actual model
     """
     
-    return Classifier(classname="weka.classifiers.trees.J48", options=["-U"])
+    mod_type = s['type']
+    params = {k:v for k,v in s.items() if not k in {'type', 'flatten'}}
 
-    # mod_type = s['type']
-    # params = {k:v for k,v in s.items() if not k in {'type', 'flatten'}}
-
-    # if mod_type in kw_ind_trees():
-    #     clf = DecisionTreeClassifier(**params)
-    # elif mod_type in kw_ind_forests():
-    #     clf = RandomForestClassifier(**params)
-    # else:
-    #     msg = "Did nog recognize classifier type: {}".format(mod_type)
-    #     raise TypeError(msg)
-
-    # return clf
+    if mod_type in kw_ind_trees():
+        return Classifier(classname="weka.classifiers.trees.J48", options=["-U"])
+    elif mod_type in kw_ind_forests():
+        return Classifier(classname="weka.classifiers.trees.RandomForest", options=["-I", "30"])
+    else:
+        msg = "Did nog recognize classifier type: {}".format(mod_type)
+        raise TypeError(msg)
 
 
 def induce_rgr(s):
