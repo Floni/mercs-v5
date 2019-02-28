@@ -1,4 +1,5 @@
 import json
+import datetime
 
 import weka.core.jvm as jvm
 import weka.core.converters as converters
@@ -468,6 +469,11 @@ class MERCS(object):
         m_list = base_ind_algo(metadata, settings, m_targ)
         nb_models = len(m_list)
 
+        build_data = dataset.create_instances_from_matrices(df.dropna().values)
+        filter = Filter(classname="weka.filters.unsupervised.attribute.NumericToNominal")
+        filter.inputformat(build_data)
+        filtered = filter.filter(build_data)
+
         # Fit all the component models
         for m_idx in range(nb_models):
             assert isinstance(m_desc[m_idx], list)
@@ -480,21 +486,16 @@ class MERCS(object):
             X = X_Y[:, :len(m_desc[m_idx])]
             Y = X_Y[:, len(m_desc[m_idx]):]
 
-            # Build instances dataset for Weka
-            build_data = dataset.create_instances_from_matrices(X, Y)
-
-            # Create and use a filter to convert the standard numeric attributes to nominal attributes
-            filter = Filter(classname="weka.filters.unsupervised.attribute.NumericToNominal")
-            filter.inputformat(build_data)
-            filtered = filter.filter(build_data)
+            m_data = filtered
+            m_data.no_class
+            for i in reversed(range(m_data.num_attributes)):
+                if (i not in m_atts):
+                    m_data.delete_attribute(i)
             
-
-            # TODO: This should be able to be multi-output but does not seem possible in MERCS
-            # Set prediction/output attribute index of the dataset
-            filtered.class_index = m_targ[m_idx][0]
+            m_data.class_index = len(m_desc[m_idx])
 
             # Save all attribute classes, needed later for weka classifier       
-            self.labels = [a.values for a in filtered.attributes()]
+            self.labels = [a.values for a in m_data.attributes()]
 
             msg="""
             X.shape: {}\n
@@ -507,7 +508,7 @@ class MERCS(object):
             # Convert (m X 1)-dim arrays to (m, )-dim arrays
             if 1 in list(X.shape): X = X.ravel()
             if 1 in list(Y.shape): Y = Y.ravel()
-
+            
             m_list[m_idx].build_classifier(filtered)
             
             del X, Y, X_Y
