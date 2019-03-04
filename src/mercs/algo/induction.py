@@ -13,6 +13,9 @@ license:
     Apache License, Version 2.0, see LICENSE for details.
 """
 
+import sys
+import random
+
 from weka.classifiers import Classifier
 
 from sklearn.tree import *
@@ -114,7 +117,16 @@ def induce_clf(s):
     if mod_type in kw_ind_trees():
         return Classifier(classname="weka.classifiers.trees.J48", options=["-U"])
     elif mod_type in kw_ind_forests():
-        return Classifier(classname="weka.classifiers.trees.RandomForest", options=["-I", "30"])
+        options = []
+
+        # Generate random seed for the RandomForest
+        options.append("-S")
+        random.seed()
+        options.append(str(random.randint(1, 2137483647)))
+        if params.__contains__("n_estimators"):
+            options.append("-I")
+            options.append(str(params.get("n_estimators")))
+        return Classifier(classname="weka.classifiers.trees.RandomForest", options=options)
     else:
         msg = "Did nog recognize classifier type: {}".format(mod_type)
         raise TypeError(msg)
