@@ -52,7 +52,8 @@ class MERCS(object):
             Filename of .json file containing the settings
         """
 
-        jvm.start()
+        if not jvm.started:
+            jvm.start()
 
         if settings_fname is None:
             self.s = create_settings()
@@ -469,7 +470,7 @@ class MERCS(object):
         m_list = base_ind_algo(metadata, settings, m_targ)
         nb_models = len(m_list)
 
-        build_data = dataset.create_instances_from_matrices(df.dropna().values)
+        build_data = dataset.create_instances_from_matrices(df.values)
         filter = Filter(classname="weka.filters.unsupervised.attribute.NumericToNominal")
         filter.inputformat(build_data)
         filtered = filter.filter(build_data)
