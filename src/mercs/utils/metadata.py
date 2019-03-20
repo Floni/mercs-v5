@@ -90,17 +90,8 @@ def check_nominal_att(attribute_type,
 
     check_uvalues = attribute_unique_values < nominal_attribute_unique_values_threshold
     check_integer_type = pd.api.types.is_integer_dtype(attribute_type)
-    check_float_type = pd.api.types.is_float_dtype(attribute_type)
 
-    check_case_one = check_integer_type and check_uvalues
-    check_case_two = check_float_type and check_nan and check_uvalues
-
-    if check_case_one:
-        return True
-    elif check_case_two:
-        return True
-    else:
-        return False
+    return check_integer_type and check_uvalues
 
 
 def collect_feature_importances(m_list, m_codes):
